@@ -63,6 +63,9 @@ while True:
             if consulta in herramientas:
                 index = herramientas.index(consulta)
                 print(f"Stock de {consulta.capitalize()}/s: {existencias[index]} unidades\n")
+            elif consulta.is_space() in herramientas:
+                index = herramientas.index(consulta.is_space())
+                print(f"Stock de {consulta.capitalize()}/s: {existencias[index]} unidades\n")
             elif consulta.lower() in herramientas:
                 index = herramientas.index(consulta.lower())
                 print(f"Stock de {consulta.capitalize()}/s: {existencias[index]} unidades\n")
