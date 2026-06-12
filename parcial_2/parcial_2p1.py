@@ -1,11 +1,8 @@
 #|| Programa de gestion de inventario ||
 
 #Sistema de menu
-def menu():
-    
-    inventario = []
-    while True:
-        print("""-- Bienvenido al sistema de gestion de inventario para Ferreteria. --
+def menu(inventario):
+    print("""-- Bienvenido al sistema de gestion de inventario para Ferreteria. --
     1. Cargar herramientas
     2. Mostrar inventario
     3. Consultar stock
@@ -13,25 +10,6 @@ def menu():
     5. Agregar herramienta (Alta de productos)
     6. Actualizar stock (Venta / Ingreso)
     7. Salir""")
-
-        opcion = input("Seleccione una opcion: ")
-        if opcion == "1":
-            cargar_herramientas(inventario)
-        elif opcion == "2":
-            mostrar_inventario(inventario)
-        elif opcion == "3":
-            consultar_stock(inventario)
-        elif opcion == "4": 
-            reporte_agotados(inventario)
-        elif opcion == "5":
-            alta_producto(inventario)
-        elif opcion == "6":
-            actualizar_stock(inventario)
-        elif opcion == "7":
-            salir()
-        else:
-            print("Opcion no valida. Intente de nuevo.")
-    
 
 #Opcion 1: Cargar herramientas
 def cargar_herramientas(inventario):
@@ -43,13 +21,15 @@ def cargar_herramientas(inventario):
     # Pedir cantidad válida
     while True:
         try:
-            cantidad = int(input("Ingrese la cantidad de herramientas a cargar: "))
+            cantidad = int(input("Ingrese la cantidad de herramientas a cargar (0 para cancelar): "))
+            if cantidad == 0:
+                print("Operacion cancelada. Volviendo al Menu.")
+                return
             if cantidad <= 0:
-                print("La cantidad debe ser un numero entero mayor a cero.")
-                continue
+                raise ValueError("La cantidad debe ser un numero entero mayor a cero.")
             break
-        except ValueError:
-            print("Entrada no valida. Ingrese un numero entero.")
+        except ValueError as e:
+            print(f"Error: {e}")
 
     # Cargar cada herramienta
     i = 0
@@ -64,19 +44,24 @@ def cargar_herramientas(inventario):
                     raise ValueError(f"Ya existe una herramienta llamada '{nombre}'.")
         except ValueError as e:
             print(f"Error: {e}")
-            continue  # vuelve a pedir el mismo i
+            continue
 
         # Pedir y validar stock
         try:
             cantidad_stock = int(input(f"Ingrese el stock inicial de '{nombre}': "))
+        except ValueError:
+            print("Error: el stock debe ser un numero entero.")
+            continue
+
+        try:
             if cantidad_stock < 0:
                 raise ValueError("El stock no puede ser negativo.")
         except ValueError as e:
             print(f"Error: {e}")
-            continue  # vuelve a pedir el mismo i
+            continue
 
         inventario.append({'herramienta': nombre, 'cantidad': cantidad_stock})
-        i += 1  # solo avanza si todo salió bien
+        i += 1
 
     print("Herramientas cargadas exitosamente.")
 
@@ -133,6 +118,11 @@ def alta_producto(inventario):
     # Pedir y validar stock
     try:
         cantidad_stock = int(input(f"Ingrese el stock inicial de '{nombre}': "))
+    except ValueError:
+        print("Error: el stock debe ser un numero entero.")
+        return
+
+    try:
         if cantidad_stock < 0:
             raise ValueError("El stock no puede ser negativo.")
     except ValueError as e:
@@ -158,21 +148,20 @@ def actualizar_stock(inventario):
                 2. Ingreso (aumentar stock)
                 3. Cancelar
                 Opcion: """)
-                if eleccion == "1":
+                if eleccion == "1": #Venta 
                     try:
                         cantidad = int(input("Ingrese la cantidad a vender: "))
                         if cantidad <= 0:
                             raise ValueError("La cantidad debe ser un numero entero mayor a cero.")
+                        if cantidad > item['cantidad']:
+                            raise ValueError(f"No hay suficiente stock para vender {cantidad} unidades. Stock actual: {item['cantidad']}.")
                     except ValueError as e:
                         print(f"Error: {e}")
-                        continue
-                    if cantidad > item['cantidad']:
-                        print(f"No hay suficiente stock para vender {cantidad} unidades. Stock actual: {item['cantidad']}.")
                         continue
                     item['cantidad'] -= cantidad
                     print(f"Venta realizada. Nuevo stock de '{item['herramienta']}': {item['cantidad']} unidades.")
                     break
-                elif eleccion == "2":
+                elif eleccion == "2": #Aumentar stock
                     try:
                         cantidad = int(input("Ingrese la cantidad a ingresar: "))
                         if cantidad <= 0:
@@ -189,11 +178,38 @@ def actualizar_stock(inventario):
                 else:
                     print("Opcion no valida. Intente de nuevo.")
             return
-        
-# Opcion 7: Salir
-def salir():
-    print("Saliendo del programa...")
-    exit()
 
-menu()
+    #Print para cuando no se encuentra la herramienta
+    print(f"No se encontro la herramienta '{nombre}' en el inventario.")
 
+# Bloque principal
+inventario = []
+opcion = 0
+while opcion != 7:
+    try:
+        menu(inventario)
+        opcion = int(input("Seleccione una opcion: "))
+        if opcion < 1 or opcion > 7:
+            raise ValueError("Opcion fuera de rango. Ingrese un numero del 1 al 7.")
+        if opcion == 1:
+            cargar_herramientas(inventario)
+        elif opcion == 2:
+            mostrar_inventario(inventario)
+        elif opcion == 3:
+            consultar_stock(inventario)
+        elif opcion == 4:
+            reporte_agotados(inventario)
+        elif opcion == 5:
+            alta_producto(inventario)
+        elif opcion == 6:
+            actualizar_stock(inventario)
+        elif opcion == 7:
+            print("Saliendo del programa...")
+    except KeyboardInterrupt:
+        print("\nKeyBoardInterrupt detectado.\nSaliendo del programa...")
+        exit()
+    except ValueError:
+        print("Opcion no valida. Intente de nuevo.")
+    except Exception as e:
+        print(f"Error: {e}")
+    
