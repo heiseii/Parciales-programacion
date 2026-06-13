@@ -205,11 +205,8 @@ while opcion != 7:
             actualizar_stock(inventario)
         elif opcion == 7:
             print("Saliendo del programa...")
-    except KeyboardInterrupt:
-        print("\nKeyBoardInterrupt detectado.\nSaliendo del programa...")
-        exit()
     except ValueError:
-        print("Opcion no valida. Intente de nuevo.")
+        print("Error: Opcion no válida. Ingrese un numero del 1 al 7.")
     except Exception as e:
         print(f"Error: {e}")
     
